@@ -7,51 +7,54 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.id)
-    .then(user => {
+  User.findById(req.params.userId)
+    .then((user) => {
       if (!user) {
-        return res.status(404).send({message: 'Нет такого пользователя'});
+        return res.status(404).send({message: 'Пользователь не найден'});
       }
-      res.send({data: user});
+      return res.send(user);
     })
-    .catch(err => res.status(500).send({message: 'Произошла ошибка'}));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({message: 'Некорректные данные'});
+      }
+      return res.status(500).send({message: err.message});
+    });
 }
 
 module.exports.createUser = (req, res) => {
   const {name, about, avatar} = req.body;
-
   User.create({name, about, avatar})
-    .then(user => {
-      if (!user) {
-        return res.status(400).send({message: 'Некорректные данные для создания пользователя'});
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({message: 'Некорректные данные'});
       }
-      res.send({data: user});
-    })
-    .catch(err => res.status(500).send({message: err.message}));
+      return res.status(500).send({message: err.message});
+    });
 };
 
 module.exports.updateUserInfo = (req, res) => {
-  const {name, about} = req.body;
-
-  User.findByIdAndUpdate(req.user._id, {name, about})
-    .then(user => {
-      if (!user) {
-        return res.status(400).send({message: 'Некорректные данные для обновления пользователя'});
+  const {name, about, avatar} = req.body;
+  User.create({name, about, avatar})
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({message: 'Некорректные данные'});
       }
-      res.send({data: user})
-    })
-    .catch(err => res.status(500).send({message: err.message}));
+      return res.status(500).send({message: err.message});
+    });
 };
 
 module.exports.updateUserAvatar = (req, res) => {
   const {avatar} = req.body;
 
-  User.findByIdAndUpdate(req.user._id, {avatar})
-    .then(user => {
-      if (!user) {
-        return res.status(400).send({message: 'Некорректные данные для обновления аватара'});
+  User.findByIdAndUpdate(req.user._id, {avatar}, {runValidators: true})
+    .then((user) => res.send({_id: user._id, avatar}))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({message: 'Некорректные данные'});
       }
-      res.send({data: user})
-    })
-    .catch(err => res.status(500).send({message: err.message}));
+      return res.status(500).send({message: err.message});
+    });
 };
