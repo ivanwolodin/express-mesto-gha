@@ -1,5 +1,9 @@
 const User = require('../models/user');
 
+const VALIDATION_ERROR = 'ValidationError';
+const CAST_ERROR = 'CastError';
+const VALIDATION_ERROR_CODE = 400;
+
 module.exports.getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send({ data: users }))
@@ -15,8 +19,8 @@ module.exports.getUserById = (req, res) => {
       return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+      if (err.name === CAST_ERROR) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -25,26 +29,26 @@ module.exports.getUserById = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
-  if (!avatar) {
-    return res.status(400).send({ message: 'Не передано поле avatar' });
-  }
-
-  if (!about) {
-    return res.status(400).send({ message: 'Не передано поле about' });
-  }
-
-  if (!name) {
-    return res.status(400).send({ message: 'Не передано поле name' });
-  }
-
   User.create({ name, about, avatar })
     .then((user) => {
+      if (!avatar) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле avatar' });
+      }
+
+      if (!about) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле about' });
+      }
+
+      if (!name) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле name' });
+      }
+
       res.statusCode = 201;
-      res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+      if (err.name === VALIDATION_ERROR) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -55,8 +59,8 @@ module.exports.updateUserInfo = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+      if (err.name === VALIDATION_ERROR) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -65,15 +69,14 @@ module.exports.updateUserInfo = (req, res) => {
 module.exports.updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
 
-  if (!avatar) {
-    return res.status(400).send({ message: 'Не передано поле avatar' });
-  }
-
   User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
     .then((user) => res.send({ _id: user._id, avatar }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Некорректные данные' });
+      if (err.name === VALIDATION_ERROR) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
+      }
+      if (!avatar) {
+        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле avatar' });
       }
       return res.status(500).send({ message: err.message });
     });
