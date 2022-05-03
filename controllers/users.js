@@ -1,8 +1,10 @@
-const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const VALIDATION_ERROR = 'ValidationError';
-const CAST_ERROR = 'CastError';
-const VALIDATION_ERROR_CODE = 400;
+const User = require('../models/user');
+const {
+  VALIDATION_ERROR, VALIDATION_ERROR_CODE, CAST_ERROR, SECRET_CODE, AUTHENTICATION_ERROR_CODE,
+} = require('../utils/utils');
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -27,22 +29,23 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  bcrypt.hash(password, 10).then(
+    (hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    }),
+  )
     .then((user) => {
-      if (!avatar) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле avatar' });
-      }
-
-      if (!about) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле about' });
-      }
-
-      if (!name) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле name' });
-      }
-
       res.statusCode = 201;
       return res.send(user);
     })
@@ -79,5 +82,27 @@ module.exports.updateUserAvatar = (req, res) => {
         return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле avatar' });
       }
       return res.status(500).send({ message: err.message });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        SECRET_CODE,
+        { expiresIn: '7d' },
+      );
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        })
+        .send({ message: 'Успешная авторизация' });
+    })
+    .catch(() => {
+      res.status(AUTHENTICATION_ERROR_CODE).send({ message: 'Авторизация не пройдена' });
     });
 };

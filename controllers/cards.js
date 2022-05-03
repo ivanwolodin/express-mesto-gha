@@ -1,8 +1,8 @@
 const Card = require('../models/card');
 
-const CAST_ERROR = 'CastError';
-const VALIDATION_ERROR = 'ValidationError';
-const VALIDATION_ERROR_CODE = 400;
+const {
+  VALIDATION_ERROR, VALIDATION_ERROR_CODE, CAST_ERROR,
+} = require('../utils/utils');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
