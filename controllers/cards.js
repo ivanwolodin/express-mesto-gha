@@ -11,14 +11,16 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.deleteCardById = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
         return res
           .status(NOT_FOUND_ERROR_CODE)
           .send({ message: 'Такой карточки нет' });
       }
-
+      if (card.owner.toString() !== req.user._id) {
+        throw Error({ message: 'Недостаточно прав для данной операции' });
+      }
       return res.send(card);
     })
     .catch((err) => {
