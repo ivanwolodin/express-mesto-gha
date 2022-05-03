@@ -3,7 +3,12 @@ const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
 const {
-  VALIDATION_ERROR, VALIDATION_ERROR_CODE, CAST_ERROR, SECRET_CODE, AUTHENTICATION_ERROR_CODE,
+  VALIDATION_ERROR,
+  VALIDATION_ERROR_CODE,
+  CAST_ERROR,
+  SECRET_CODE,
+  AUTHENTICATION_ERROR_CODE,
+  NOT_FOUND_ERROR_CODE,
 } = require('../utils/utils');
 
 module.exports.getUsers = (req, res) => {
@@ -13,16 +18,16 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params.userId)
+  User.findById(req.body._id)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(NOT_FOUND_ERROR_CODE).send({ message: 'Пользователь не найден' });
       }
       return res.send(user);
     })
     .catch((err) => {
       if (err.name === CAST_ERROR) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
+        return res.status(VALIDATION_ERROR_CODE).send({ message: err.message });
       }
       return res.status(500).send({ message: err.message });
     });
@@ -95,6 +100,7 @@ module.exports.login = (req, res) => {
         SECRET_CODE,
         { expiresIn: '7d' },
       );
+
       res
         .cookie('jwt', token, {
           maxAge: 3600000 * 24 * 7,
