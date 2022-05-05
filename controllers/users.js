@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { DataBaseError } = require(('../errors/dataBaseError'));
-const { NotFoundError } = require(('../errors/notFoundError'));
+const { DataBaseError } = require('../errors/dataBaseError');
+const { NotFoundError } = require('../errors/notFoundError');
 
 const User = require('../models/user');
 const {
