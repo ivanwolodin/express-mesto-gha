@@ -1,9 +1,8 @@
-class AuthorzationError extends Error {
-  constructor(message = 'Авторизуйтесь для совершения данной операции', ...rest) {
-    super(...rest);
-    this.status = 403;
-    this.message = message;
+class AuthorizationError extends Error {
+  constructor(message = 'Авторизуйтесь для совершения данной операции') {
+    super(message);
+    this.statusCode = 403;
   }
 }
 
-module.exports = AuthorzationError;
+module.exports = { AuthorizationError };

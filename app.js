@@ -3,6 +3,7 @@ const express = require('express');
 const { PORT = 3000 } = process.env;
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+// const { celebrate, Joi, errors } = require('celebrate');
 const { login, createUser } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 const { NOT_FOUND_ERROR_CODE } = require('./utils/utils');
@@ -31,6 +32,8 @@ app.use((req, res) => {
     message: 'Нет такой страницы',
   });
 });
+
+// app.use(errors);
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

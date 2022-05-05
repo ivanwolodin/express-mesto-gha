@@ -1,9 +1,8 @@
 class NotFoundError extends Error {
-  constructor(message = 'Такого пользователя или карточки нет', ...rest) {
-    super(...rest);
-    this.status = 404;
-    this.message = message;
+  constructor(message = 'Такого пользователя или карточки нет') {
+    super(message);
+    this.statusCode = 404;
   }
 }
 
-module.exports = NotFoundError;
+module.exports = { NotFoundError };
