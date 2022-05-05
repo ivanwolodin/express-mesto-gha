@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { NotFoundError } = require('../errors/notFoundError');
-const { BadRequestError } = require('../errors/badRequestError');
+const { NotFoundError } = require('../errors/NotFoundError');
+const { BadRequestError } = require('../errors/BadRequestError');
 const { DataBaseError } = require('../errors/DataBaseError');
+const { AuthorizationError } = require('../errors/AuthorizationError');
 
 const User = require('../models/user');
 const {
@@ -106,7 +107,13 @@ module.exports.updateUserAvatar = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
+    if (!email || !password) {
+      next(new BadRequestError('Пользователь не найден'));
+    }
     const user = await User.findUserByCredentials(email, password);
+    if (!user) {
+      next(new AuthorizationError());
+    }
     const token = await jwt.sign(
       { _id: user._id },
       SECRET_CODE,

@@ -1,7 +1,7 @@
 const Card = require('../models/card');
-const { NotFoundError } = require('../errors/notFoundError');
-const { AuthorizationError } = require('../errors/authorzationError');
-const { BadRequestError } = require('../errors/badRequestError');
+const { NotFoundError } = require('../errors/NotFoundError');
+const { BadRequestError } = require('../errors/BadRequestError');
+const { PrivilegeError } = require('../errors/PrivilegeError');
 
 module.exports.getCards = async (req, res, next) => {
   try {
@@ -19,7 +19,7 @@ module.exports.deleteCardById = async (req, res, next) => {
       next(NotFoundError('Нет карточки с таким id'));
     }
     if (card.owner.toString() !== req.user._id) {
-      next(AuthorizationError({ message: 'Недостаточно прав для данной операции' }));
+      next(PrivilegeError());
     }
     const cardData = await Card.findByIdAndDelete(req.params._id);
     res.send({ data: cardData });
