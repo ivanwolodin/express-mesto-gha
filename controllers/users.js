@@ -1,20 +1,20 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { DataBaseError } = require(('../errors/dataBaseError'));
+const { NotFoundError } = require(('../errors/notFoundError'));
 
 const User = require('../models/user');
 const {
-  VALIDATION_ERROR,
   VALIDATION_ERROR_CODE,
   CAST_ERROR,
   SECRET_CODE,
-  AUTHENTICATION_ERROR_CODE,
   NOT_FOUND_ERROR_CODE,
 } = require('../utils/utils');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch(next);
 };
 
 module.exports.getUserById = (req, res) => {
@@ -33,7 +33,7 @@ module.exports.getUserById = (req, res) => {
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name,
     about,
@@ -50,47 +50,45 @@ module.exports.createUser = (req, res) => {
       password: hash,
     }),
   )
+    .catch((err) => {
+      if (err.code === 11000) {
+        throw new DataBaseError({ message: 'Пользователь с таким email уже зарегистрирован' });
+      } else next(err);
+    })
     .then((user) => {
       res.statusCode = 201;
       return res.send(user);
     })
-    .catch((err) => {
-      if (err.name === VALIDATION_ERROR) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
-      }
-      return res.status(500).send({ message: err.message });
-    });
+    .catch(next);
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { runValidators: true, new: true })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === VALIDATION_ERROR) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
-      }
-      return res.status(500).send({ message: err.message });
-    });
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, about },
+    { new: true, runValidators: true },
+  )
+    .orFail(new NotFoundError({ message: 'Нет пользователя с таким id' }))
+    .then((user) => res.send({ data: user }))
+    .catch(next);
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { avatar }, { runValidators: true })
-    .then((user) => res.send({ _id: user._id, avatar }))
-    .catch((err) => {
-      if (err.name === VALIDATION_ERROR) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Некорректные данные' });
-      }
-      if (!avatar) {
-        return res.status(VALIDATION_ERROR_CODE).send({ message: 'Не передано поле avatar' });
-      }
-      return res.status(500).send({ message: err.message });
-    });
+  User.findByIdAndUpdate(
+    req.user._id,
+    { avatar },
+    { new: true, runValidators: true },
+  )
+    .orFail(new NotFoundError({ message: 'Нет пользователя с таким id' }))
+    .then((newAvatar) => res.send({ data: newAvatar }))
+    .catch(next);
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -108,7 +106,5 @@ module.exports.login = (req, res) => {
         })
         .send({ message: 'Успешная авторизация' });
     })
-    .catch(() => {
-      res.status(AUTHENTICATION_ERROR_CODE).send({ message: 'Авторизация не пройдена' });
-    });
+    .catch(next);
 };
