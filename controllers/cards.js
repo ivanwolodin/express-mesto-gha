@@ -18,6 +18,7 @@ module.exports.deleteCardById = (req, res) => {
           .status(NOT_FOUND_ERROR_CODE)
           .send({ message: 'Такой карточки нет' });
       }
+
       if (card.owner.toString() !== req.user._id) {
         throw Error({ message: 'Недостаточно прав для данной операции' });
       }
