@@ -1,5 +1,6 @@
 const VALIDATION_ERROR = 'ValidationError';
 const CAST_ERROR = 'CastError';
+
 const VALIDATION_ERROR_CODE = 400;
 const AUTHENTICATION_ERROR_CODE = 401;
 const UNAUTHORIZED_ERROR_CODE = 403;
