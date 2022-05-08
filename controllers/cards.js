@@ -14,14 +14,14 @@ module.exports.getCards = async (req, res, next) => {
 
 module.exports.deleteCardById = async (req, res, next) => {
   try {
-    const card = await Card.findById(req.params._id);
+    const card = await Card.findById(req.params.cardId);
     if (!card) {
       next(new NotFoundError('Нет карточки с таким id'));
     }
     if (card.owner.toString() !== req.user._id) {
       next(new PrivilegeError());
     }
-    const cardData = await Card.findByIdAndRemove(req.params._id);
+    const cardData = await Card.findByIdAndRemove(req.params.cardId);
     res.send({ data: cardData });
   } catch (e) {
     next(e);
@@ -65,7 +65,7 @@ module.exports.dislikeCard = async (req, res, next) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
-      { $addToSet: { likes: req.user._id } },
+      { $pull: { likes: req.user._id } },
       { new: true },
     );
     if (!card) {
