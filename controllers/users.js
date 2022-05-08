@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const { NotFoundError } = require('../errors/NotFoundError');
 const { BadRequestError } = require('../errors/BadRequestError');
 const { DataBaseError } = require('../errors/DataBaseError');
-const { AuthorizationError } = require('../errors/AuthorizationError');
 
 const User = require('../models/user');
 const {
@@ -74,8 +73,8 @@ module.exports.createUser = async (req, res, next) => {
 };
 
 module.exports.updateUserInfo = async (req, res, next) => {
-  const { name, about } = req.body;
   try {
+    const { name, about } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, about },
@@ -91,8 +90,8 @@ module.exports.updateUserInfo = async (req, res, next) => {
 };
 
 module.exports.updateUserAvatar = async (req, res, next) => {
-  const { avatar } = req.body;
   try {
+    const { avatar } = req.body;
     const newAvatar = await User.findByIdAndUpdate(
       req.user._id,
       { avatar },
@@ -105,20 +104,19 @@ module.exports.updateUserAvatar = async (req, res, next) => {
 };
 
 module.exports.login = async (req, res, next) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
     if (!email || !password) {
       next(new BadRequestError('Пользователь не найден'));
     }
+
     const user = await User.findUserByCredentials(email, password);
-    if (!user) {
-      next(new AuthorizationError());
-    }
     const token = await jwt.sign(
       { _id: user._id },
       SECRET_CODE,
       { expiresIn: '7d' },
     );
+    console.log(token);
     res
       .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
@@ -129,3 +127,22 @@ module.exports.login = async (req, res, next) => {
     next(e);
   }
 };
+
+// {
+//   "name": "Test",
+//   "about": "abouttest",
+//   "avatar": "http://testlink.com",
+//   "email": "vd@text4444.ru",
+//   "hash": "$2a$10$8niaIwg7yj6jIhay5/94dOQhQaKSYNolTTNzddXnJBryTF9rH5WnC",
+//   "user": {
+//   "name": "Test",
+//     "about": "abouttest",
+//     "avatar": "http://testlink.com",
+//     "_id": "6273f624fca3af31b27e57f4",
+//     "email": "vd@text4444.ru",
+//     "password": "$2a$10$8niaIwg7yj6jIhay5/94dOQhQaKSYNolTTNzddXnJBryTF9rH5WnC",
+//     "__v": 0
+// }
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjczZjYyNGZjYTNhZjMxYjI3ZTU3ZjQiLCJpYXQiOj
+// E2NTE3NjY5MTcsImV4cCI6MTY1MjM3MTcxN30.csWX26-GVEOQa5Vcp1CSdPR-hgcDD9JZozclxKm6Vvo
+// }
