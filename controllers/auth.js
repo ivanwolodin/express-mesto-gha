@@ -4,6 +4,7 @@ const User = require('../models/user');
 const { DataBaseError } = require('../errors/DataBaseError');
 const { VALIDATION_ERROR, CAST_ERROR, JWT_TOKEN } = require('../utils/utils');
 const { BadRequestError } = require('../errors/BadRequestError');
+const { AuthorizationError } = require('../errors/AuthorizationError');
 
 module.exports.createUser = async (req, res, next) => {
   try {
@@ -45,16 +46,18 @@ module.exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      next(new BadRequestError('Пользователь не найден'));
+      next(new BadRequestError('Не хватает данных для осуществления запроса'));
     }
 
     const user = await User.findUserByCredentials(email, password);
+    if (!user) {
+      next(new AuthorizationError('Нет такого пользователя'));
+    }
     const token = await jwt.sign(
       { _id: user._id },
       JWT_TOKEN,
       { expiresIn: '7d' },
     );
-    console.log(token);
     res
       .cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,
