@@ -45,7 +45,12 @@ app.use(handler404);
 
 app.use(errors());
 
-app.use((err) => handler500(err));
+app.use((
+  err,
+  req,
+  res,
+  next,
+) => handler500(err, req, res, next));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
