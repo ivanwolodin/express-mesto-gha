@@ -38,7 +38,7 @@ module.exports.createCard = async (req, res, next) => {
     if (!card) {
       next(new BadRequestError('Не удалось создать карточку'));
     }
-    res.send(card);
+    res.send({ card });
   } catch (e) {
     next(e);
   }
@@ -53,8 +53,8 @@ module.exports.likeCard = async (req, res, next) => {
     );
     if (!card) {
       next(new NotFoundError('Такой карточки нет'));
+      return;
     }
-    res.send(card);
   } catch (e) {
     next(e);
   }
@@ -69,8 +69,9 @@ module.exports.dislikeCard = async (req, res, next) => {
     );
     if (!card) {
       next(new NotFoundError('Такой карточки нет'));
+      return;
     }
-    res.send(card);
+    res.send({ card });
   } catch (e) {
     next(e);
   }

@@ -1,7 +1,7 @@
 const { NotFoundError } = require('./NotFoundError');
 
 module.exports.handler404 = async (req, res, next) => {
-  next(new NotFoundError('страница не найдена'));
+  next(new NotFoundError('Cтраница не найдена'));
 };
 
 module.exports.handler500 = async (err, req, res, next) => {
