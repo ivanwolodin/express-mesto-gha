@@ -4,9 +4,9 @@ const { PORT = 3000 } = process.env;
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const { errors, celebrate, Joi } = require('celebrate');
-const { login, createUser } = require('./controllers/users');
+const { login, createUser } = require('./controllers/auth');
 const { auth } = require('./middlewares/auth');
-const { NotFoundError } = require('./errors/NotFoundError');
+const { handler404, handler500 } = require('./errors/errorHandlers');
 
 const app = express();
 
@@ -25,6 +25,7 @@ app.post('/signin', celebrate({
     password: Joi.string().required(),
   }),
 }), login);
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -40,28 +41,11 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use(
-  (
-    req,
-    res,
-    next,
-  ) => {
-    next(new NotFoundError('страница не найдена'));
-  },
-);
+app.use(handler404);
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
-  const { statusCode = 500, message } = err;
-
-  res.status(statusCode).send({
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message,
-  });
-  next();
-});
+app.use((err) => handler500(err));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
