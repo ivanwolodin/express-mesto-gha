@@ -9,10 +9,11 @@ const { AuthorizationError } = require('../errors/AuthorizationError');
 module.exports.getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
-    if (!users) {
-      next(new AuthorizationError('Пользователь не найден'));
+    if (users) {
+      res.send({ data: users });
+      return;
     }
-    res.send({ data: users });
+    next(new AuthorizationError('Пользователь не найден'));
   } catch (e) {
     next(e);
   }
@@ -22,7 +23,7 @@ module.exports.getMe = async (req, res, next) => {
   try {
     const me = await User.findById(req.user._id);
     if (!me) {
-      next(NotFoundError('Нет такого пользователя'));
+      next(new NotFoundError('Нет такого пользователя'));
     }
     res.send({ data: me });
   } catch (e) {

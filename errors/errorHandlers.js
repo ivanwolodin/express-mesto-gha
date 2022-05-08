@@ -6,7 +6,6 @@ module.exports.handler404 = async (req, res, next) => {
 
 module.exports.handler500 = async (err, req, res, next) => {
   const { statusCode = 500, message } = err;
-
   res.status(statusCode).send({
     message: statusCode === 500
       ? 'На сервере произошла ошибка'

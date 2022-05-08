@@ -16,7 +16,7 @@ module.exports.deleteCardById = async (req, res, next) => {
   try {
     const card = await Card.findById(req.params._id);
     if (!card) {
-      next(NotFoundError('Нет карточки с таким id'));
+      next(new NotFoundError('Нет карточки с таким id'));
     }
     if (card.owner.toString() !== req.user._id) {
       next(PrivilegeError());
@@ -32,11 +32,11 @@ module.exports.createCard = async (req, res, next) => {
   const { name, link } = req.body;
   try {
     if (!link || !name) {
-      next(BadRequestError({ message: 'Не передано одно из полей' }));
+      next(new BadRequestError('Не передано одно из полей'));
     }
     const card = await Card.create({ name, link, owner: req.user._id });
     if (!card) {
-      next(new BadRequestError({ message: 'Не удалось создать карточку' }));
+      next(new BadRequestError('Не удалось создать карточку'));
     }
     res.send(card);
   } catch (e) {
@@ -52,7 +52,7 @@ module.exports.likeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      next(NotFoundError({ message: 'Такой карточки нет' }));
+      next(new NotFoundError('Такой карточки нет'));
     }
     res.send(card);
   } catch (e) {
@@ -68,7 +68,7 @@ module.exports.dislikeCard = async (req, res, next) => {
       { new: true },
     );
     if (!card) {
-      next(NotFoundError({ message: 'Такой карточки нет' }));
+      next(new NotFoundError('Такой карточки нет'));
     }
     res.send(card);
   } catch (e) {
