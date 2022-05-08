@@ -1,16 +1,34 @@
 const { NotFoundError } = require('../errors/NotFoundError');
 const { BadRequestError } = require('../errors/BadRequestError');
-
 const User = require('../models/user');
 const {
   CAST_ERROR,
 } = require('../utils/utils');
+const { AuthorizationError } = require('../errors/AuthorizationError');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
+    if (!users) {
+      next(new AuthorizationError('Пользователь не найден'));
+    }
     res.send({ data: users });
   } catch (e) {
+    next(e);
+  }
+};
+
+module.exports.getMe = async (req, res, next) => {
+  try {
+    const me = await User.findById(req.user._id);
+    if (!me) {
+      next(NotFoundError('Нет такого пользователя'));
+    }
+    res.send({ data: me });
+  } catch (e) {
+    if (e.name === CAST_ERROR) {
+      next(new BadRequestError('Некорректный id пользователя'));
+    }
     next(e);
   }
 };
