@@ -55,6 +55,7 @@ module.exports.likeCard = async (req, res, next) => {
       next(new NotFoundError('Такой карточки нет'));
       return;
     }
+    res.send({ card });
   } catch (e) {
     next(e);
   }
