@@ -1,14 +1,14 @@
 const jwt = require('jsonwebtoken');
 const {
   JWT_TOKEN,
-  AUTHENTICATION_ERROR_CODE,
 } = require('../utils/utils');
+const { AuthorizationError } = require('../errors/AuthorizationError');
 
 module.exports.auth = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(AUTHENTICATION_ERROR_CODE).send({ message: 'Авторизация не пройдена' });
+    next(new AuthorizationError('Авторизация не пройдена'));
   }
   const token = authorization.replace('Bearer ', '');
 
@@ -16,7 +16,7 @@ module.exports.auth = (req, res, next) => {
   try {
     payload = jwt.verify(token, JWT_TOKEN);
   } catch (err) {
-    return new Error({ message: err.message });
+    next(new AuthorizationError('Авторизация не пройдена'));
   }
   req.user = payload;
   return next();

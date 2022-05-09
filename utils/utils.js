@@ -11,6 +11,8 @@ const MONGO_DB_DUPLICATE_EMAIL_CODE = 11000;
 
 const { JWT_TOKEN = 'c2238e749426160ecaf93dc6900352f91981f9311e70945e117110fe1ec1c3fa' } = process.env;
 
+const REGEX_MAIL_CHECK = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/;
+
 module.exports = {
   VALIDATION_ERROR_CODE,
   CAST_ERROR,
@@ -21,4 +23,5 @@ module.exports = {
   NOT_FOUND_ERROR_CODE,
   DATABASE_ERROR_CODE,
   MONGO_DB_DUPLICATE_EMAIL_CODE,
+  REGEX_MAIL_CHECK,
 };

@@ -4,14 +4,10 @@ const User = require('../models/user');
 const {
   CAST_ERROR,
 } = require('../utils/utils');
-const { AuthorizationError } = require('../errors/AuthorizationError');
 
 module.exports.getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
-    if (!users) {
-      next(new AuthorizationError('Пользователь не найден'));
-    }
     res.send({ data: users });
   } catch (e) {
     next(e);

@@ -8,6 +8,7 @@ const {
   updateUserAvatar,
   getMe,
 } = require('../controllers/users');
+const { REGEX_MAIL_CHECK } = require('../utils/utils');
 
 router.get('/', getUsers);
 router.get('/me', getMe);
@@ -28,7 +29,7 @@ router.patch('/me', celebrate({
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().pattern(
-      /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/,
+      REGEX_MAIL_CHECK,
     ),
   }),
 }), updateUserAvatar);

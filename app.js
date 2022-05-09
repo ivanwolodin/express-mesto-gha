@@ -4,12 +4,13 @@ const { PORT = 3000 } = process.env;
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const { errors, celebrate, Joi } = require('celebrate');
+const helmet = require('helmet');
 const { login, createUser } = require('./controllers/auth');
 const { auth } = require('./middlewares/auth');
 const { handler404, handler500 } = require('./errors/errorHandlers');
 
 const app = express();
-
+app.use(helmet());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
