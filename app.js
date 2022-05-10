@@ -5,9 +5,12 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const { errors, celebrate, Joi } = require('celebrate');
 const helmet = require('helmet');
+
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { login, createUser } = require('./controllers/auth');
 const { auth } = require('./middlewares/auth');
-const { handler404, handler500 } = require('./errors/errorHandlers');
+const { handler404, generalErrorHandler } = require('./errors/errorHandlers');
+const {REGEX_MAIL_CHECK} = require("./utils/utils");
 
 const app = express();
 app.use(helmet());
@@ -19,6 +22,9 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useCreateIndex: true,
   useFindAndModify: false,
 });
+
+app.use(requestLogger);
+app.use(errorLogger);
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -33,7 +39,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w.-]+)+[\w\-._~:/?#[\]@!$&'()*+,;=.]+$/),
+    avatar: Joi.string().pattern(REGEX_MAIL_CHECK),
   }),
 }), createUser);
 
@@ -44,9 +50,11 @@ app.use('/cards', require('./routes/cards'));
 
 app.use(handler404);
 
+app.use(errorLogger);
+
 app.use(errors());
 
-app.use(handler500);
+app.use(generalErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
